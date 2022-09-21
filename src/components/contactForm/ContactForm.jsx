@@ -1,38 +1,46 @@
 import { useState } from 'react';
-import { nanoid } from "nanoid";
-import { addContact } from "../../redux/actions";
-import { useDispatch } from "react-redux";
+import { useGetContactsQuery } from '../../redux/contactsReducer.js';
+import { useAddContactMutation } from '../../redux/contactsReducer.js';
 import styles from './ContactForm.module.css';
 
 export default function ContactForm() {
     const [name, setName] = useState('');
     const [number, setNumber] = useState('');
+    const { data: contacts } = useGetContactsQuery();
+    const [addContact] = useAddContactMutation();
 
-    const dispatch = useDispatch(); 
 
-    const formSubmit = data => {
-        dispatch(addContact(data));
+    const createContact = async user => {
+        await addContact(user);
     };
 
-    const handleSubmit = evt => {
-        evt.preventDefault();
-        const data = {
-            id: nanoid(),
-            name,
-            number
-        }
-        formSubmit(data);
+
+    const cheakAddContact = name => {
+        const isValidate = contacts.find(item => item.name === name);
+        isValidate && alert(`${name} is already in contacts`);
+        return isValidate;
+    };
+
+    const handleSubmut = e => {
+        e.preventDefault();
+        const isValidate = cheakAddContact(name);
         resetForm();
-    }
+        if (isValidate) return;
+        createContact({ name, number });
+        resetForm();
+    };
 
     const handleInputChange = evt => {
-        switch (evt.currentTarget.name) {
+        const { name } = evt.currentTarget;
+        const { value } = evt.currentTarget;
+
+        switch (name) {
             case "name":
-                setName(evt.currentTarget.value);
+                setName(value);
                 break;
             
             case "number":
-                setNumber(evt.currentTarget.value);
+                setNumber(value);
                 break;
             
             default:
@@ -46,7 +54,7 @@ export default function ContactForm() {
     }
 
     return (
-        <form onSubmit={handleSubmit} className={styles.form}>
+        <form onSubmit={handleSubmut} className={styles.form}>
             <label className={styles.formLabel}>
                 Name
                 <input

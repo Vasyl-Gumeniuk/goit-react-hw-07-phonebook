@@ -1,27 +1,39 @@
-import { createReducer } from "@reduxjs/toolkit";
-import { addContact, deleteContact, filterContact } from "./actions.js";
+import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 
-export const contactsReducer = createReducer(
-    {
-        items: JSON.parse(window.localStorage.getItem('contacts')) ?? [
-            { id: 'id-1', name: 'Rosie Simpson', number: '459-12-56' },
-            { id: 'id-2', name: 'Hermione Kline', number: '443-89-12' },
-            { id: 'id-3', name: 'Eden Clements', number: '645-17-79' },
-            { id: 'id-4', name: 'Annie Copeland', number: '227-91-26' }
-        ],
-        filter: '',
-    }, {
-        [addContact]: (state, action) => {
-            const isNameExist = state.items.find(contact => contact.name.toLowerCase() === action.payload.name.toLowerCase());
-            isNameExist ? alert(`${action.payload.name} is already in contacts`) : state.items.push(action.payload);
-            window.localStorage.setItem("contacts", JSON.stringify(state.items));
-        },
-        [deleteContact]: (state, action) => {
-            state.items = state.items.filter(contact => contact.id !== action.payload);
-            window.localStorage.setItem("contacts", JSON.stringify(state.items));
-        },
-        [filterContact]: (state, action) => {
-            state.filter = action.payload.toLowerCase();
-        },
-    }
-);
+export const contactsSplice = createApi({
+
+    reducerPath: 'contacts',
+  
+    baseQuery: fetchBaseQuery({
+        baseUrl: 'https://63287cf19a053ff9aab93534.mockapi.io/',
+    }),
+    tagTypes: ['Contact'],
+  
+    endpoints: builder => ({
+        getContacts: builder.query({
+            query: () => '/contacts',
+            providesTags: ['Contact'],
+        }),
+        addContact: builder.mutation({
+            query: data => ({
+                url: `/contacts`,
+                method: 'POST',
+                body: data,
+            }),
+            invalidatesTags: ['Contact'],
+        }),
+        deleteContact: builder.mutation({
+            query: id => ({
+                url: `/contacts/${id}`,
+                method: 'DELETE',
+            }),
+            invalidatesTags: ['Contact'],
+        }),
+    }),
+});
+
+export const {
+    useGetContactsQuery,
+    useAddContactMutation,
+    useDeleteContactMutation,
+} = contactsSplice;

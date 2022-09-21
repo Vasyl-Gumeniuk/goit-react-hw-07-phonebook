@@ -1,8 +1,10 @@
 import { configureStore } from "@reduxjs/toolkit";
-import { contactsReducer } from "./contactsReducer.js";
+import { contactsSplice } from "./contactsReducer.js";
 
 export const store = configureStore({
     reducer: {
-        contactsReducer,
+        [contactsSplice.reducerPath]: contactsSplice.reducer,
     },
+    middleware: getDefaultMiddleware =>
+    getDefaultMiddleware().concat(contactsSplice.middleware),
 });
